@@ -4,7 +4,9 @@ mod ui;
 use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
-use ratatui::crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::EventStream;
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
+use tokio_stream::StreamExt;
 
 use crate::{app::App, ui::ui};
 
@@ -13,22 +15,28 @@ pub struct Args {
     pub img_path: PathBuf,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
     let mut terminal = ratatui::init();
     let mut app = App::new(args)?;
+    let mut events = EventStream::new();
     loop {
         terminal.draw(|f| {
             ui(f, &mut app);
         })?;
+
+        let Some(next) = events.next().await else {
+            continue;
+        };
 
         if let Event::Key(
             key @ KeyEvent {
                 kind: event::KeyEventKind::Press,
                 ..
             },
-        ) = event::read()?
+        ) = next?
         {
             match key.code {
                 KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
