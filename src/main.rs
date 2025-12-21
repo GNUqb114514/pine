@@ -1,4 +1,5 @@
 mod app;
+mod text_buffer;
 mod ui;
 
 use std::{error::Error, path::PathBuf};
@@ -13,6 +14,7 @@ use crate::{app::App, ui::ui};
 #[derive(Parser)]
 pub struct Args {
     pub img_path: PathBuf,
+    pub file_path: PathBuf,
 }
 
 #[tokio::main]
@@ -20,7 +22,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
     let mut terminal = ratatui::init();
-    let mut app = App::new(args)?;
+    let mut app = App::new(args).await?;
     let mut events = EventStream::new();
     loop {
         terminal.draw(|f| {
@@ -49,6 +51,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         };
 
         if app.exit() {
+            app.cleanup().await?;
             break;
         }
     }
