@@ -1,3 +1,4 @@
+//! The abstraction of text buffers.
 use std::{
     io::{self, ErrorKind},
     mem,
@@ -9,6 +10,7 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
 };
 
+/// A text buffer.
 pub struct TextBuffer {
     text: String,
     file_path: Option<PathBuf>,
@@ -17,6 +19,7 @@ pub struct TextBuffer {
 }
 
 impl TextBuffer {
+    /// Create a new empty buffer with no file assigned.
     pub fn new() -> TextBuffer {
         Self {
             text: String::new(),
@@ -26,6 +29,7 @@ impl TextBuffer {
         }
     }
 
+    /// Create a new buffer from a text with no file assigned.
     pub fn from_text(text: String) -> TextBuffer {
         Self {
             text: text,
@@ -35,12 +39,16 @@ impl TextBuffer {
         }
     }
 
+    /// Create a new buffer assigned with the file.
+    ///
+    /// This with try to read the file asynchronously and fail if reading failed.
     pub async fn from_file(file_path: PathBuf) -> io::Result<Self> {
         let open_options = mem::take(OpenOptions::new().read(true).write(true).create(true));
         let fd = open_options.open(&file_path).await;
         let mut fd = match fd {
             Ok(fd) => fd,
             Err(err) => match err.kind() {
+                // Extension prepared
                 _ => return Err(err),
             },
         };

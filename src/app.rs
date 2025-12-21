@@ -1,3 +1,5 @@
+//! The logic of the app.
+
 use std::{error::Error, io};
 
 use ratatui::style::Style;
@@ -6,6 +8,7 @@ use tui_textarea::{Input, TextArea};
 
 use crate::{Args, text_buffer::TextBuffer};
 
+/// An app instance.
 pub struct App<'textarea> {
     buffer: TextBuffer,
     textarea: TextArea<'textarea>,
@@ -14,6 +17,7 @@ pub struct App<'textarea> {
 }
 
 impl App<'_> {
+    /// Create a new app.
     pub async fn new(args: Args) -> Result<Self, Box<dyn Error>> {
         let buffer = TextBuffer::from_file(args.file_path).await?;
         Ok(Self {
@@ -32,25 +36,37 @@ impl App<'_> {
             },
         })
     }
+    /// Send a input to the textarea.
+    ///
+    /// This will update the buffer.
     pub fn forward_input(&mut self, input: impl Into<Input>) {
         if self.textarea.input(input) {
             self.buffer
                 .set_text(self.textarea.lines().into_iter().cloned().collect());
         }
     }
+    /// The text area of the left side.
     pub fn textarea(&'_ self) -> &'_ TextArea<'_> {
         &self.textarea
     }
+    /// Whether the app should exit.
+    ///
+    /// Before exiting, please call [cleanup](Self::cleanup).
     pub fn exit(&self) -> bool {
         self.exit
     }
+    /// A mutable reference to the [StatefulProtocol] of the image.
     pub fn image_mut(&mut self) -> &mut StatefulProtocol {
         &mut self.image
     }
+    /// Tell the app that it should exit.
     pub fn set_exit(&mut self) {
         self.exit = true;
     }
 
+    /// Clean up the app.
+    ///
+    /// This saves all unsaved changes.
     pub async fn cleanup(&mut self) -> io::Result<()> {
         if self.buffer.dirty() {
             self.buffer.save().await?;

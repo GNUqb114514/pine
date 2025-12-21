@@ -1,3 +1,7 @@
+//! Pine Editor, a TUI text editor.
+//!
+//! See [the repo page](https://github.com/GNUqb114514/pine) for detail.
+
 mod app;
 mod text_buffer;
 mod ui;
@@ -12,8 +16,11 @@ use tokio_stream::StreamExt;
 use crate::{app::App, ui::ui};
 
 #[derive(Parser)]
+/// CLI Argument.
 pub struct Args {
+    /// The path of the image shown on the right side.
     pub img_path: PathBuf,
+    /// The path of the file opened on the right side.
     pub file_path: PathBuf,
 }
 

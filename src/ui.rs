@@ -1,3 +1,5 @@
+//! The rendering module.
+
 use ratatui::{
     Frame,
     layout::{Constraint, Layout},
@@ -7,6 +9,7 @@ use ratatui_image::StatefulImage;
 
 use crate::app::App;
 
+/// Render the UI.
 pub fn ui<'frame, 'app, 'textarea>(frame: &'frame mut Frame, app: &'app mut App<'textarea>) {
     let chunks = Layout::horizontal(Constraint::from_percentages([50, 50])).split(frame.area());
     let buffer = Block::default().title("Buffer #1").borders(Borders::ALL);
