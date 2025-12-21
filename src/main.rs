@@ -18,10 +18,12 @@ use crate::{app::App, ui::ui};
 #[derive(Parser)]
 /// CLI Argument.
 pub struct Args {
-    /// The path of the image shown on the right side.
-    pub img_path: PathBuf,
     /// The path of the file opened on the right side.
-    pub file_path: PathBuf,
+    #[arg(short, long)]
+    pub file: Option<PathBuf>,
+    /// The path of the image shown on the right side.
+    #[arg(short, long)]
+    pub image: Option<PathBuf>,
 }
 
 #[tokio::main]

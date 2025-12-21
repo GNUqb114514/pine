@@ -13,13 +13,16 @@ pub struct App<'textarea> {
     buffer: TextBuffer,
     textarea: TextArea<'textarea>,
     exit: bool,
-    image: StatefulProtocol,
+    image: Option<StatefulProtocol>,
 }
 
 impl App<'_> {
     /// Create a new app.
     pub async fn new(args: Args) -> Result<Self, Box<dyn Error>> {
-        let buffer = TextBuffer::from_file(args.file_path).await?;
+        let buffer = match args.file {
+            Some(file_path) => TextBuffer::from_file(file_path).await?,
+            None => TextBuffer::new(),
+        };
         Ok(Self {
             textarea: {
                 let mut textarea = TextArea::from(buffer.lines().map(&str::to_string));
@@ -31,8 +34,12 @@ impl App<'_> {
             exit: false,
             image: {
                 let picker = Picker::from_query_stdio()?;
-                let image = image::ImageReader::open(args.img_path)?.decode()?;
-                picker.new_resize_protocol(image)
+                if let Some(img_path) = args.image {
+                    let image = image::ImageReader::open(img_path)?.decode()?;
+                    Some(picker.new_resize_protocol(image))
+                } else {
+                    None
+                }
             },
         })
     }
@@ -60,8 +67,8 @@ impl App<'_> {
     }
 
     /// A mutable reference to the [StatefulProtocol] of the image.
-    pub fn image_mut(&mut self) -> &mut StatefulProtocol {
-        &mut self.image
+    pub fn image_mut(&mut self) -> Option<&mut StatefulProtocol> {
+        self.image.as_mut()
     }
 
     /// Tell the app that it should exit.

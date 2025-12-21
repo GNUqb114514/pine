@@ -38,6 +38,8 @@ pub fn ui<'frame, 'app, 'textarea>(frame: &'frame mut Frame, app: &'app mut App<
 
     let image = StatefulImage::default();
     let image_buffer = Block::bordered().title("Buffer #2");
-    frame.render_stateful_widget(image, image_buffer.inner(chunks[1]), app.image_mut());
+    if let Some(image_protocol) = app.image_mut() {
+        frame.render_stateful_widget(image, image_buffer.inner(chunks[1]), image_protocol);
+    }
     frame.render_widget(image_buffer, chunks[1]);
 }
