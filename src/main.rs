@@ -3,32 +3,23 @@
 //! See [the repo page](https://github.com/GNUqb114514/pine) for detail.
 
 mod app;
+mod cli;
 mod text_buffer;
 mod ui;
 
-use std::{error::Error, path::PathBuf};
+use std::error::Error;
 
 use clap::Parser;
 use crossterm::event::EventStream;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use tokio_stream::StreamExt;
 
+use crate::cli::Cli;
 use crate::{app::App, ui::ui};
-
-#[derive(Parser)]
-/// CLI Argument.
-pub struct Args {
-    /// The path of the file opened on the right side.
-    #[arg(short, long)]
-    pub file: Option<PathBuf>,
-    /// The path of the image shown on the right side.
-    #[arg(short, long)]
-    pub image: Option<PathBuf>,
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let args = Args::parse();
+    let args = Cli::parse();
 
     let mut terminal = ratatui::init();
     let mut app = App::new(args).await?;

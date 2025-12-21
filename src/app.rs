@@ -6,7 +6,7 @@ use ratatui::style::Style;
 use ratatui_image::{picker::Picker, protocol::StatefulProtocol};
 use tui_textarea::{Input, TextArea};
 
-use crate::{Args, text_buffer::TextBuffer};
+use crate::{cli::Cli as Args, text_buffer::TextBuffer};
 
 /// An app instance.
 pub struct App<'textarea> {
@@ -19,7 +19,26 @@ pub struct App<'textarea> {
 impl App<'_> {
     /// Create a new app.
     pub async fn new(args: Args) -> Result<Self, Box<dyn Error>> {
-        let buffer = match args.file {
+        let (file, image) = {
+            let mut file = None;
+            let mut image = None;
+            for i in args.files {
+                if infer::get_from_path(&i)
+                    .transpose()
+                    .map_or(Ok(false), |v| match v {
+                        Ok(v) => Ok(v.mime_type().starts_with("image/")),
+                        Err(err) if err.kind() == io::ErrorKind::NotFound => Ok(false),
+                        Err(err) => Err(err),
+                    })?
+                {
+                    image = Some(i);
+                } else {
+                    file = Some(i);
+                }
+            }
+            (file, image)
+        };
+        let buffer = match file {
             Some(file_path) => TextBuffer::from_file(file_path).await?,
             None => TextBuffer::new(),
         };
@@ -34,7 +53,7 @@ impl App<'_> {
             exit: false,
             image: {
                 let picker = Picker::from_query_stdio()?;
-                if let Some(img_path) = args.image {
+                if let Some(img_path) = image {
                     let image = image::ImageReader::open(img_path)?.decode()?;
                     Some(picker.new_resize_protocol(image))
                 } else {
