@@ -49,7 +49,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         {
             match key.code {
                 KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                    app.set_exit()
+                    app.set_exit();
+                }
+                KeyCode::Char('s') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    app.save().await?;
                 }
                 _ => {
                     app.forward_input(key);

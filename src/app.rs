@@ -36,6 +36,7 @@ impl App<'_> {
             },
         })
     }
+
     /// Send a input to the textarea.
     ///
     /// This will update the buffer.
@@ -45,20 +46,24 @@ impl App<'_> {
                 .set_text(self.textarea.lines().into_iter().cloned().collect());
         }
     }
+
     /// The text area of the left side.
     pub fn textarea(&'_ self) -> &'_ TextArea<'_> {
         &self.textarea
     }
+
     /// Whether the app should exit.
     ///
     /// Before exiting, please call [cleanup](Self::cleanup).
     pub fn exit(&self) -> bool {
         self.exit
     }
+
     /// A mutable reference to the [StatefulProtocol] of the image.
     pub fn image_mut(&mut self) -> &mut StatefulProtocol {
         &mut self.image
     }
+
     /// Tell the app that it should exit.
     pub fn set_exit(&mut self) {
         self.exit = true;
@@ -68,9 +73,17 @@ impl App<'_> {
     ///
     /// This saves all unsaved changes.
     pub async fn cleanup(&mut self) -> io::Result<()> {
-        if self.buffer.dirty() {
-            self.buffer.save().await?;
-        }
+        self.buffer.save().await?;
+        Ok(())
+    }
+
+    /// The buffer of the left side.
+    pub fn buffer(&self) -> &TextBuffer {
+        &self.buffer
+    }
+
+    pub async fn save(&mut self) -> io::Result<()> {
+        self.buffer.save().await?;
         Ok(())
     }
 }
